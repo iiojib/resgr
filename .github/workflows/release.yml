@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Build platform binaries
+        run: make VERSION=${GITHUB_REF_NAME#v}
+
+      - name: Package artifacts
+        run: |
+          mkdir -p release
+          tar -czf "release/resgr-x86_64-macos.tar.gz" -C "build/x86_64-macos/bin" resgr
+          tar -czf "release/resgr-aarch64-macos.tar.gz" -C "build/aarch64-macos/bin" resgr
+          tar -czf "release/resgr-x86_64-linux.tar.gz" -C "build/x86_64-linux/bin" resgr
+          tar -czf "release/resgr-aarch64-linux.tar.gz" -C "build/aarch64-linux/bin" resgr
+          cp "build/install.sh" "release/install.sh"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" -p \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            release/*.tar.gz release/install.sh

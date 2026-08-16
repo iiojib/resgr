@@ -4,6 +4,12 @@ Scopes ANSI SGR styles to individual output lines and prevents styles from leaki
 
 ## Install
 
+#### Using installer script
+
+```bash
+curl -fsSL https://github.com/iiojib/resgr/releases/latest/download/install.sh | sh
+```
+
 #### From source:
 
 ```sh
